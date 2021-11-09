@@ -17,11 +17,8 @@ def check(v1, v2, v3):
 
 
 def is_one_digit(v):
-    try:
-        v = int(v)
-    except ValueError:
-        return False
-    if (v > -10) and (v < 10):
+    tmp = int(v)
+    if (tmp == v) and (v > -10) and (v < 10):
         return True
     return False
 
@@ -32,6 +29,9 @@ msg_2 = "Yes ... an interesting math operation. You've slept through all classes
 msg_3 = "Yeah... division by zero. Smart move..."
 msg_4 = "Do you want to store the result? (y / n):"
 msg_5 = "Do you want to continue calculations? (y / n):"
+msg_10 = "Are you sure? It is only one digit! (y / n)"
+msg_11 = "Don't be silly! It's just one number! Add to the memory? (y / n)"
+msg_12 = "Last chance! Do you really want to embarrass yourself? (y / n)"
 
 x = 0.0
 y = 0.0
@@ -88,7 +88,30 @@ while continue_calculations:
         print(msg_4)
         answer_4 = input()
     if answer_4 == "y":
-        memory = result
+        if is_one_digit(result):
+            msg_index = 10
+            answer_10 = ""
+            ask_stupid_question = True
+            while ask_stupid_question:
+                while (answer_10 not in ["y", "n"]) or (answer_10 == "y" and msg_index < 13):
+                    if answer_10 == "y":
+                        msg_index += 1
+                    if msg_index == 10:
+                        print(msg_10)
+                        answer_10 = input()
+                    elif msg_index == 11:
+                        print(msg_11)
+                        answer_10 = input()
+                    elif msg_index == 12:
+                        print(msg_12)
+                        answer_10 = input()
+                    else:
+                        ask_stupid_question = False
+                        memory = result
+                if answer_10 == "n":
+                    ask_stupid_question = False
+        else:
+            memory = result
     answer_5 = ""
     while answer_5 not in ["y", "n"]:
         print(msg_5)
