@@ -1,11 +1,6 @@
 import random
 
 class Dominoes:
-    # def generate_stock(self):
-    #     for x in range(7):
-    #         for y in range(7):
-    #             self.stock.append([x, y])
-
     def generate_stock(self):
         for x in range(7):
             for y in range(x, 7):
@@ -31,31 +26,25 @@ class Dominoes:
                 else:
                     if self.computer_dominoes[x][0] > self.computer_dominoes[max_computer_index][0]:
                         max_computer_index = x
-        # for x in self.computer_dominoes:
-        #     if x[0] == x[1]:
-        #         if max_computer_item == []:
-        #             max_computer_item = x
-        #         else:
-        #             if x[0] > max_computer_item[0]:
-        #                 max_computer_item = x
+
         if (max_computer_index == None) and (max_player_index == None):
             self.status = "computer"
         elif (max_computer_index != None) and (max_player_index == None):
             self.domino_snake.append(self.computer_dominoes[max_computer_index])
             del self.computer_dominoes[max_computer_index]
-            self.status = "computer"
+            self.status = "player"
         elif (max_computer_index == None) and (max_player_index != None):
             self.domino_snake.append(self.player_dominoes[max_player_index])
             del self.player_dominoes[max_player_index]
-            self.status = "player"
+            self.status = "computer"
         elif self.computer_dominoes[max_computer_index][0] > self.player_dominoes[max_player_index][0]:
             self.domino_snake.append(self.computer_dominoes[max_computer_index])
             del self.computer_dominoes[max_computer_index]
-            self.status = "computer"
+            self.status = "player"
         else:
             self.domino_snake.append(self.player_dominoes[max_player_index])
             del self.player_dominoes[max_player_index]
-            self.status = "player"
+            self.status = "computer"
 
     def __init__(self):
         self.stock = []
