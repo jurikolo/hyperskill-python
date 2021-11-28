@@ -72,6 +72,9 @@ class Dominoes:
     def get_status(self):
         return self.status
 
+    def set_status(self, status):
+        self.status = status
+
     def is_game_over(self):
         # check if any player is out of dominoes
         if len(self.player_dominoes) == 0 or len(self.computer_dominoes) == 0:
@@ -86,7 +89,7 @@ class Dominoes:
             if item[1] == corner_item:
                 cnt += 1
         if cnt == 8:
-            if corner_item == self.snake[len(self.snake)][1]:
+            if corner_item == self.snake[len(self.snake) - 1][1]:
                 return True
         return False
 
@@ -98,8 +101,14 @@ class Dominoes:
         else:
             return "draw"
 
+    def get_out_of_moves(self):
+        return self.out_of_moves
+
     def make_computer_turn(self):
-        index = random.randint(len(self.computer_dominoes) * -1, len(self.computer_dominoes))
+        while True:
+            index = random.randint(len(self.computer_dominoes) * -1, len(self.computer_dominoes))
+            if self.validate_input(index, self.computer_dominoes) == "valid":
+                break
         if index < 0:
             self.snake.insert(0, self.computer_dominoes[abs(index) - 1])
             del self.computer_dominoes[abs(index) - 1]
@@ -107,23 +116,63 @@ class Dominoes:
             self.snake.append(self.computer_dominoes[abs(index) - 1])
             del self.computer_dominoes[abs(index) - 1]
         else:
-            index = random.randint(len(self.stock) * -1, len(self.stock))
-            self.computer_dominoes.append(self.stock[index])
-            del self.stock[index]
+            if len(self.stock) > 0:
+                index = random.randint((len(self.stock) - 1) * -1, len(self.stock) - 1)
+                self.computer_dominoes.append(self.stock[index])
+                del self.stock[index]
         self.status = "player"
 
     def make_player_turn(self, index):
         if index < 0:
-            self.snake.insert(0, self.player_dominoes[abs(index) - 1])
+            if self.player_dominoes[abs(index) - 1][1] == self.snake[0][0]:
+                self.snake.insert(0, self.player_dominoes[abs(index) - 1])
+            else:
+                item = self.flip(self.player_dominoes[abs(index) - 1])
+                self.snake.insert(0, item)
             del self.player_dominoes[abs(index) - 1]
         elif index > 0:
-            self.snake.append(self.player_dominoes[index - 1])
+            if self.player_dominoes[index - 1][0] == self.snake[0][0]:
+                self.snake.append(self.player_dominoes[index - 1])
+            else:
+                item = self.flip(self.player_dominoes[index - 1])
+                self.snake.append(item)
             del self.player_dominoes[index - 1]
         else:
-            index = random.randint(len(self.stock) * -1, len(self.stock))
-            self.player_dominoes.append(self.stock[index])
-            del self.stock[index]
+            if len(self.stock) > 0:
+                index = random.randint((len(self.stock) - 1) * -1, len(self.stock) - 1)
+                self.player_dominoes.append(self.stock[abs(index)])
+                del self.stock[abs(index)]
         self.status = "computer"
+
+    def validate_input(self, index_as_string, dominoes_set):
+        # index is list index, quite obvious
+        # dominoes is a list of dominoes, either player or computer
+        result = ""
+        try:
+            index = int(index_as_string)
+        except ValueError:
+            return "invalid_input"
+        if abs(index) > len(dominoes_set):
+            result = "invalid_input"
+        elif index < 0:
+            if (dominoes_set[abs(index) - 1][0] == self.snake[0][0]) or (dominoes_set[abs(index) - 1][1] == self.snake[0][0]):
+                result = "valid"
+            else:
+                result = "invalid_move"
+        elif index > 0:
+            if (dominoes_set[index - 1][0] == self.snake[len(self.snake) - 1][1]) or (dominoes_set[index - 1][1] == self.snake[len(self.snake) - 1][1]):
+                result = "valid"
+            else:
+                result = "invalid_move"
+        else:
+            result = "valid"
+        if result == "valid":
+            self.out_of_moves = []
+        return result
+
+    def flip(self, item):
+        result = [item[1], item[0]]
+        return result
 
     def __init__(self):
         self.stock = []
@@ -131,6 +180,7 @@ class Dominoes:
         self.computer_dominoes = []
         self.snake = []
         self.status = ""
+        self.out_of_moves = []
 
         self.generate_stock()
 
@@ -160,17 +210,6 @@ def snake_to_string(snake):
         snake_as_string += str(snake[-1])
     return snake_as_string
 
-
-def validate_user_input(user_input, player_dominoes):
-    try:
-        user_input_as_int = int(user_input)
-    except ValueError:
-        return False
-    if abs(user_input_as_int) > len(player_dominoes):
-        return False
-    return True
-
-
 dominoes = Dominoes()
 while True:
     print("="*70)
@@ -197,14 +236,21 @@ while True:
         print("Status: It's your turn to make a move. Enter your command.")
 
     user_input = input()
-    while (dominoes.get_status() == "player") and not validate_user_input(user_input, dominoes.get_player_dominoes()):
-        print("Invalid input. Please try again.")
+    while (dominoes.get_status() == "player") and dominoes.validate_input(user_input, dominoes.get_player_dominoes()) not in ["valid"]:
+        if (dominoes.validate_input(user_input, dominoes.get_player_dominoes())) == "invalid_input":
+            print("Invalid input. Please try again.")
+        else:
+            print("Illegal move. Please try again.")
         user_input = input()
 
     if dominoes.get_status() == "computer":
         dominoes.make_computer_turn()
     else:
         dominoes.make_player_turn(int(user_input))
+
+    # Out of stock, draw game
+    if dominoes.get_stock_size() == 0:
+        break
 
 winner = dominoes.get_winner()
 if winner == "player":
