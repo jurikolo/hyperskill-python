@@ -1,11 +1,6 @@
 import random
 
 class Dominoes:
-    # def generate_stock(self):
-    #     for x in range(7):
-    #         for y in range(7):
-    #             self.stock.append([x, y])
-
     def generate_stock(self):
         for x in range(7):
             for y in range(x, 7):
@@ -19,32 +14,26 @@ class Dominoes:
         max_computer_index = None
         for x in range(7):
             if self.player_dominoes[x][0] == self.player_dominoes[x][1]:
-                if max_player_index == None:
+                if max_player_index is None:
                     max_player_index = x
                 else:
                     if self.player_dominoes[x][0] > self.player_dominoes[max_player_index][0]:
                         max_player_index = x
         for x in range(7):
             if self.computer_dominoes[x][0] == self.computer_dominoes[x][1]:
-                if max_computer_index == None:
+                if max_computer_index is None:
                     max_computer_index = x
                 else:
                     if self.computer_dominoes[x][0] > self.computer_dominoes[max_computer_index][0]:
                         max_computer_index = x
-        # for x in self.computer_dominoes:
-        #     if x[0] == x[1]:
-        #         if max_computer_item == []:
-        #             max_computer_item = x
-        #         else:
-        #             if x[0] > max_computer_item[0]:
-        #                 max_computer_item = x
-        if (max_computer_index == None) and (max_player_index == None):
+
+        if (max_computer_index is None) and (max_player_index is None):
             self.status = "computer"
-        elif (max_computer_index != None) and (max_player_index == None):
+        elif (max_computer_index is not None) and (max_player_index is None):
             self.snake.append(self.computer_dominoes[max_computer_index])
             del self.computer_dominoes[max_computer_index]
             self.status = "player"
-        elif (max_computer_index == None) and (max_player_index != None):
+        elif (max_computer_index is None) and (max_player_index is not None):
             self.snake.append(self.player_dominoes[max_player_index])
             del self.player_dominoes[max_player_index]
             self.status = "computer"
@@ -104,11 +93,48 @@ class Dominoes:
     def get_out_of_moves(self):
         return self.out_of_moves
 
+    def calculate_weights(self):
+        weights = [0, 0, 0, 0, 0, 0, 0]
+        for x in self.computer_dominoes:
+            weights[x[0]] += 1
+            weights[x[1]] += 1
+        for x in self.snake:
+            weights[x[0]] += 1
+            weights[x[1]] += 1
+        return weights
+
+    def sort_dominoes(self, weights):
+        positional_weights = []
+        for x in self.computer_dominoes:
+            item_weight = weights[x[0]] + weights[x[1]]
+            positional_weights.append(item_weight)
+        has_anything_changed = True
+        computer_dominoes_copy = self.computer_dominoes
+        while has_anything_changed:
+            has_anything_changed = False
+            for x in range(len(self.computer_dominoes) - 1):
+                if positional_weights[x] < positional_weights[x + 1]:
+                    has_anything_changed = True
+                    tmp = computer_dominoes_copy[x]
+                    computer_dominoes_copy[x] = computer_dominoes_copy[x + 1]
+                    computer_dominoes_copy[x + 1] = tmp
+                    tmp = positional_weights[x]
+                    positional_weights[x] = positional_weights[x + 1]
+                    positional_weights[x + 1] = tmp
+
+        self.computer_dominoes = computer_dominoes_copy
+
     def make_computer_turn(self):
-        while True:
-            index = random.randint(len(self.computer_dominoes) * -1, len(self.computer_dominoes))
+        weights = self.calculate_weights()
+        self.sort_dominoes(weights)
+        index = 0
+        for x in self.computer_dominoes:
             if self.validate_input(index, self.computer_dominoes) == "valid":
                 break
+            index *= -1
+            if self.validate_input(index, self.computer_dominoes) == "valid":
+                break
+            index = (index * -1) + 1
         if index < 0:
             self.snake.insert(0, self.computer_dominoes[abs(index) - 1])
             del self.computer_dominoes[abs(index) - 1]
@@ -209,6 +235,7 @@ def snake_to_string(snake):
         snake_as_string += str(snake[-2])
         snake_as_string += str(snake[-1])
     return snake_as_string
+
 
 dominoes = Dominoes()
 while True:
