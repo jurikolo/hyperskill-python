@@ -1,120 +1,102 @@
-# write your code here
-def check(v1, v2, v3):
-    msg_6 = " ... lazy"
-    msg_7 = " ... very lazy"
-    msg_8 = " ... very, very lazy"
-    msg_9 = "You are"
-    msg = ""
-    if is_one_digit(v1) and is_one_digit(v2):
-        msg += msg_6
-    if (v1 == 1 or v2 == 1) and (v3 == "*"):
-        msg += msg_7
-    if (v1 == 0 or v2 == 0) and (v3 == "*" or v3 == "+" or v3 == "-"):
-        msg += msg_8
-    if msg != "":
-        msg = msg_9 + msg
-        print(msg)
+# Calculate how many characters required for each space
+def calculate_delimiter_multiplier(x, y):
+    spaces = x * y
+    result = 1
+    while spaces > 9:
+        spaces /= 10
+        result += 1
+    return result
 
 
-def is_one_digit(v):
-    tmp = int(v)
-    if (tmp == v) and (v > -10) and (v < 10):
-        return True
+# Calculate
+def calculate_delimiter(some_num):
+    result = 1
+    while some_num > 9:
+        some_num /= 10
+        result += 1
+    return result
+
+
+def get_dashes(delimiter_multiplier, y_delimiter, board_y):
+    result = " " * y_delimiter
+    result += "--"  # first dash
+    result += "-" * (board_y * (delimiter_multiplier + 1))
+    result += "-"  # last dash
+    return result
+
+
+def get_row_prefix(y, y_delimiter):
+    return " " * (y_delimiter - len(str(y))) + str(y)
+
+
+def get_footer(delimiter_multiplier, y_delimiter, board_y):
+    result = " " * y_delimiter + " "
+    for x in range(1, board_y + 1):
+        result += " " + " " * (delimiter_multiplier - calculate_delimiter(x)) + str(x)
+    return result
+
+
+def get_possible_moves(x, y, board_x, board_y):
+    dirty_moves_list = [[x + 1, y + 2], [x + 1, y - 2], [x + 2, y + 1], [x + 2, y - 1],
+                        [x - 1, y + 2], [x - 1, y - 2], [x - 2, y + 1], [x - 2, y - 1]]
+    moves_list = []
+    for move in dirty_moves_list:
+        if (move[0] > 0 and move[0] <= board_y and move[1] > 0 and move[1] <= board_x):
+            moves_list.append(move)
+    print(moves_list)
+    return moves_list
+
+
+def space_in_possible_moves(row, column, possible_moves):
+    for x in possible_moves:
+        if x[1] == row and x[0] == column:
+            return True
     return False
 
 
-msg_0 = "Enter an equation"
-msg_1 = "Do you even know what numbers are? Stay focused!"
-msg_2 = "Yes ... an interesting math operation. You've slept through all classes, haven't you?"
-msg_3 = "Yeah... division by zero. Smart move..."
-msg_4 = "Do you want to store the result? (y / n):"
-msg_5 = "Do you want to continue calculations? (y / n):"
-msg_10 = "Are you sure? It is only one digit! (y / n)"
-msg_11 = "Don't be silly! It's just one number! Add to the memory? (y / n)"
-msg_12 = "Last chance! Do you really want to embarrass yourself? (y / n)"
+# Initialize board
+while True:
+    board = input("Enter your board dimensions: ")
+    try:
+        board_y, board_x = board.split(sep=" ")
+        board_x = int(board_x)
+        board_y = int(board_y)
+        assert board_x >= 0
+        assert board_y >= 0
+    except Exception:
+        print("Invalid dimensions!")
+    else:
+        break
 
-x = 0.0
-y = 0.0
-memory = 0.0
-oper = ""
-result = ""
+# Initialize starting position
+while True:
+    pos = input("Enter the knight's starting position: ")
+    try:
+        pos_x, pos_y = pos.split(sep=" ")
+        pos_x = int(pos_x)
+        pos_y = int(pos_y)
+        assert pos_y in range(1, board_x + 1)
+        assert pos_x in range(1, board_y + 1)
+    except Exception:
+        print("Invalid dimensions!")
+    else:
+        break
 
-continue_calculations = True
-while continue_calculations:
-    is_valid_divisor = False
-    while not is_valid_divisor:
-        is_valid_divisor = True
-        is_valid_operator = False
-        while not is_valid_operator:
-            is_valid_operator = True
-            is_valid_number = False
-            while not is_valid_number:
-                is_valid_number = True
-                print(msg_0)
-                calc = input()
-                x, oper, y = calc.split(
-                    sep=' ',
-                    maxsplit=2
-                )
-                if x == "M":
-                    x = memory
-                if y == "M":
-                    y = memory
-                try:
-                    x = float(x)
-                    y = float(y)
-                except ValueError:
-                    is_valid_number = False
-                    print(msg_1)
-            if oper not in ["+", "-", "*", "/"]:
-                is_valid_operator = False
-                print(msg_2)
-            else:
-                check(x, y, oper)
-                if oper == "+":
-                    result = x + y
-                elif oper == "-":
-                    result = x - y
-                elif oper == "*":
-                    result = x * y
-                elif y == 0:
-                    is_valid_divisor = False
-                    print(msg_3)
-                else:
-                    result = x / y
-    print(result)
-    answer_4 = ""
-    while answer_4 not in ["y", "n"]:
-        print(msg_4)
-        answer_4 = input()
-    if answer_4 == "y":
-        if is_one_digit(result):
-            msg_index = 10
-            answer_10 = ""
-            ask_stupid_question = True
-            while ask_stupid_question:
-                while (answer_10 not in ["y", "n"]) or (answer_10 == "y" and msg_index < 13):
-                    if answer_10 == "y":
-                        msg_index += 1
-                    if msg_index == 10:
-                        print(msg_10)
-                        answer_10 = input()
-                    elif msg_index == 11:
-                        print(msg_11)
-                        answer_10 = input()
-                    elif msg_index == 12:
-                        print(msg_12)
-                        answer_10 = input()
-                    else:
-                        ask_stupid_question = False
-                        memory = result
-                if answer_10 == "n":
-                    ask_stupid_question = False
+del_mult = calculate_delimiter_multiplier(board_x, board_y)
+y_delimiter = calculate_delimiter(board_y)
+possible_moves = get_possible_moves(pos_x, pos_y, board_x, board_y)
+# Print the board
+print(get_dashes(del_mult, y_delimiter, board_y))
+for row in range(board_x, 0, -1):
+    to_print = f"{get_row_prefix(row, y_delimiter)}| "
+    for column in range(1, board_y + 1):
+        if (pos_x == column) and (pos_y == row):
+            to_print += " " * (del_mult - 1) + "X "
+        elif space_in_possible_moves(row, column, possible_moves):
+            to_print += " " * (del_mult - 1) + "O "
         else:
-            memory = result
-    answer_5 = ""
-    while answer_5 not in ["y", "n"]:
-        print(msg_5)
-        answer_5 = input()
-    if answer_5 == "n":
-        continue_calculations = False
+            to_print += ("_" * del_mult) + " "
+    to_print += "|"
+    print(to_print)
+print(get_dashes(del_mult, y_delimiter, board_y))
+print(get_footer(del_mult, y_delimiter, board_y))
