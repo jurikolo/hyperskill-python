@@ -90,6 +90,23 @@ def get_move(board_y, board_x, possible_moves):
     return pos_x, pos_y
 
 
+def get_solution(pos_y, pos_x, board_y, board_x, solution):
+    solution.append([pos_y, pos_x])
+    if len(solution) == board_y * board_x:
+        return solution
+    possible_moves = sorted(get_possible_moves(pos_y, pos_x, board_y, board_x, solution), reverse=True)
+    while (len(solution) < board_y * board_x) and len(possible_moves) > 0:
+    # if (len(solution) < board_y * board_x) and len(possible_moves) == 0:
+        pos_y, pos_x = possible_moves[0]
+        del possible_moves[0]
+        solution = get_solution(pos_y, pos_x, board_y, board_x, solution)
+        if len(solution) == board_y * board_x:
+            return solution
+        else:
+            del solution[len(solution) - 1]
+    return solution
+
+
 # Initialize board
 while True:
     board = input("Enter your board dimensions: ")
@@ -117,7 +134,15 @@ while True:
         print("Invalid dimensions!")
     else:
         break
-# Initialize starting position
+
+while True:
+    choice = input("Do you want to try the puzzle? (y/n): ")
+    if choice in ["y", "n"]:
+        break
+    else:
+        print("Invalid input!")
+
+solution = get_solution(pos_x, pos_y, board_y, board_x, [])
 
 del_mult = calculate_delimiter_multiplier(board_y, board_x)
 y_delimiter = calculate_delimiter(board_x)
@@ -125,34 +150,57 @@ occupied_spaces = [[pos_x, pos_y]]
 possible_moves = get_possible_moves(pos_x, pos_y, board_y, board_x, occupied_spaces)
 visits = 0
 
-# while len(possible_moves) > 0:
-while True:
-    visits += 1
+if len(solution) != board_y * board_x:
+    print("No solution exists!")
+elif choice == "y":
+    while True:
+        visits += 1
+        print(get_dashes(del_mult, y_delimiter, board_x))
+        for row in range(board_y, 0, -1):
+            to_print = f"{get_row_prefix(row, y_delimiter)}| "
+            for column in range(1, board_x + 1):
+                if (pos_x == column) and (pos_y == row):
+                    to_print += " " * (del_mult - 1) + "X "
+                elif is_occupied(row, column, occupied_spaces):
+                    to_print += " " * (del_mult - 1) + "* "
+                elif space_in_possible_moves(row, column, possible_moves):
+                    to_print += " " * (del_mult - 1) + f"{number_of_possible_moves(row, column, board_y, board_x, occupied_spaces)} "
+                else:
+                    to_print += ("_" * del_mult) + " "
+            to_print += "|"
+            print(to_print)
+        print(get_dashes(del_mult, y_delimiter, board_x))
+        print(get_footer(del_mult, y_delimiter, board_x))
+        print()
+        if len(possible_moves) == 0:
+            break
+        pos_x, pos_y = get_move(board_y, board_x, possible_moves)
+        occupied_spaces.append([pos_x, pos_y])
+        possible_moves = get_possible_moves(pos_x, pos_y, board_y, board_x, occupied_spaces)
+
+    if visits == (board_x * board_y):
+        print("What a great tour! Congratulations!")
+    else:
+        print("No more possible moves!")
+        print(f"Your knight visited {visits} squares!")
+
+else:
+    # print solution here
+    print("Here's the solution!")
     print(get_dashes(del_mult, y_delimiter, board_x))
     for row in range(board_y, 0, -1):
         to_print = f"{get_row_prefix(row, y_delimiter)}| "
         for column in range(1, board_x + 1):
-            if (pos_x == column) and (pos_y == row):
-                to_print += " " * (del_mult - 1) + "X "
-            elif is_occupied(row, column, occupied_spaces):
-                to_print += " " * (del_mult - 1) + "* "
-            elif space_in_possible_moves(row, column, possible_moves):
-                to_print += " " * (del_mult - 1) + f"{number_of_possible_moves(row, column, board_y, board_x, occupied_spaces)} "
+            cnt = 1
+            while solution[cnt - 1] != [row, column]:
+                cnt += 1
+            if cnt < 10:
+                to_print += " " * (del_mult - 1) + f"{cnt} "
+            elif cnt < 100:
+                to_print += " " * (del_mult - 2) + f"{cnt} "
             else:
-                to_print += ("_" * del_mult) + " "
+                to_print += " " * (del_mult - 3) + f"{cnt} "
         to_print += "|"
         print(to_print)
     print(get_dashes(del_mult, y_delimiter, board_x))
     print(get_footer(del_mult, y_delimiter, board_x))
-    print()
-    if len(possible_moves) == 0:
-        break
-    pos_x, pos_y = get_move(board_y, board_x, possible_moves)
-    occupied_spaces.append([pos_x, pos_y])
-    possible_moves = get_possible_moves(pos_x, pos_y, board_y, board_x, occupied_spaces)
-
-if visits == (board_x * board_y):
-    print("What a great tour! Congratulations!")
-else:
-    print("No more possible moves!")
-    print(f"Your knight visited {visits} squares!")
