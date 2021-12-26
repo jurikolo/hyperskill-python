@@ -17,7 +17,27 @@ def get_header_level():
             pass
 
 
-available_formatters = ["plain", "bold", "italic", "header", "link", "inline-code", "new-line"]
+def get_list(type):
+    while True:
+        try:
+            row_num = int(input("Number of rows:"))
+            if row_num > 0:
+                break
+            else:
+                print("The number of rows should be greater than zero")
+        except Exception:
+            pass
+    result = ""
+    for cnt in range(1, row_num + 1):
+        if type == "ordered-list":
+            result += f"{cnt}. "
+        else:
+            result += "* "
+        result += input(f"Row #{cnt}:") + "\n"
+    return result
+
+
+available_formatters = ["plain", "bold", "italic", "header", "link", "inline-code", "new-line", "ordered-list", "unordered-list"]
 markdown_text = ""
 while True:
     if markdown_text != "":
@@ -47,5 +67,7 @@ while True:
             markdown_text += f"[{label}]({url})"
         elif user_input == "new-line":
             markdown_text += "\n"
+        elif user_input in ["ordered-list", "unordered-list"]:
+            markdown_text += get_list(user_input)
     else:
         print("Unknown formatting type or command")
