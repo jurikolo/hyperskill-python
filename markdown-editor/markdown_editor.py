@@ -47,6 +47,9 @@ while True:
         print("Available formatters: plain bold italic header link inline-code ordered-list unordered-list new-line")
         print("Special commands: !help !done")
     elif user_input == "!done":
+        output_file = open("output.md", "w")
+        output_file.write(markdown_text)
+        output_file.close()
         break
     elif user_input in available_formatters:
         if user_input == "plain":
