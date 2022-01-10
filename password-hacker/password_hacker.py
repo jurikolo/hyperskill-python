@@ -7,7 +7,7 @@ from datetime import timedelta, datetime
 
 
 def get_common_logins():
-    with open("/home/jurikolo/git/hyperskill-python/password-hacker/logins.txt", "r") as f:
+    with open("~/git/hyperskill-python/password-hacker/logins.txt", "r") as f:
         str = [i.replace("\n", "") for i in f.readlines()]
     return str
 
@@ -75,6 +75,7 @@ password = ""
 
 with socket.socket() as client_socket:
     address = (hostname, port)
+    client_socket.connect(address)
     client_socket.connect(address)
 
     login = hack_login(client_socket)
