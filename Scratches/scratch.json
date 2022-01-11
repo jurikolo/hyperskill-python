@@ -1,0 +1,17 @@
+{
+  "Changes": [
+    {
+      "Action": "CREATE",
+      "ResourceRecordSet": {
+        "Name": "home.jurikolo.name",
+        "Type": "A",
+        "TTL": 120,
+        "ResourceRecords": [
+          {
+            "Value": "IP_TO_REPLACE"
+          }
+        ]
+      }
+    }
+  ]
+}
